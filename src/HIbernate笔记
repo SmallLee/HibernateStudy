@@ -1,0 +1,39 @@
+1.对象的持久化
+    狭义的理解：把对象永久保存到数据库
+    广义的理解：包括和数据库相关的各种操作
+    加载：为了能在系统中找到所需的对象，需要为每一个对象分配一个i额唯一的标识，，
+    在关系型数据库中称为主键，而在对象术语中，称为对象标识OID(Object identifier)
+
+2.查看mysql支持什么存储引擎show engines;
+   查看mysql当前默认的存储引擎：show variables like '%storage_engine%';
+   +----------------------------+--------+
+   | Variable_name              | Value  |
+   +----------------------------+--------+
+   | default_storage_engine     | InnoDB |
+   | default_tmp_storage_engine | InnoDB |
+   | storage_engine             | InnoDB |
+   +----------------------------+--------+
+   查看某个表用了什么引擎 show create table 表名;
+| Table   | Create Table                                                                                                                                                                                                  |
++---------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| android | CREATE TABLE `android` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `num` int(11) DEFAULT NULL,
+  `name` varchar(3) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1 |
+
+3.可以不配置hibernate使用的方言，这个时候hibernate会根据mysql驱动的版本自动选择对应的方言
+如果想让hibernate自动建表，则配置hibernate使用的数据库方言是要选择MySQL5Dialect
+MySQLInnoDBDialect已经过时了，不能选择这个，否则hibernate无法自动建表
+
+4.主键配置
+ <id name="id" type="java.lang.Integer">
+            <column name="ID"/>
+            由 Hibernate 根据使用的数据库自行判断采用哪种主键生成方式。
+            <generator class="native"/>
+        </id>
+主键必须有且只有一个，必须放在普通属性的前面，普通属性使用property节点描述
+
+5.windows下mysql表名不自动转换小写配置
+查看mysql是否是将表名自动转为小写  show variables like '%lower_case_table_names%';
