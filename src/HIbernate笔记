@@ -37,3 +37,20 @@ MySQLInnoDBDialect已经过时了，不能选择这个，否则hibernate无法�
 
 5.windows下mysql表名不自动转换小写配置
 查看mysql是否是将表名自动转为小写  show variables like '%lower_case_table_names%';
+
+6.开发步骤
+    1)创建Hibernate配置文件cfg.xml
+    2)创建对象关系映射文件hbm.xml
+    3)创建持久化类
+    4)通过Hibernate API编写访问数据库的代码
+
+7.Configuration类负责管理Hibernate的配置信息，可以使用默认的配置，也可以从文件中加载配置
+SessionFactory在Hibernate中实际起到了一个缓冲区的作用，它缓冲了Hibernate自动生成的SQL语句和一些其它的映射数据，
+还缓冲了一些将来有可能重复利用的数据
+ServiceRegistry：基于hibernate的服务和配置必须注册在ServiceRegistry中
+
+hbm2ddl.auto取值：
+    create:每次都重新生成表
+    create-drop：生成表，但是SessionFactory一关闭，表就被删除了
+    update:若表结构不一样，修改表结构，不会删除已有的行和列
+    validate:会和数据库中的表进行比较，若hbm中列在数据库中不存在，会抛出异常
