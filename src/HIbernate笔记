@@ -54,3 +54,45 @@ hbm2ddl.auto取值：
     create-drop：生成表，但是SessionFactory一关闭，表就被删除了
     update:若表结构不一样，修改表结构，不会删除已有的行和列
     validate:会和数据库中的表进行比较，若hbm中列在数据库中不存在，会抛出异常
+    8.show full columns from news2;查看表中所有列的信息，结果如下
+    +----------+--------------+-------------------+------+-----+---------+----------------+---------------------------------+---------+
+    | Field    | Type         | Collation         | Null | Key | Default | Extra          | Privileges                      | Comment |
+    +----------+--------------+-------------------+------+-----+---------+----------------+---------------------------------+---------+
+    | ID2      | int(11)      | NULL              | NO   | PRI | NULL    | auto_increment | select,insert,update,references |         |
+    | TITLE2   | varchar(255) | latin1_swedish_ci | YES  |     | NULL    |                | select,insert,update,references |         |
+    | CONTENT2 | varchar(255) | latin1_swedish_ci | YES  |     | NULL    |                | select,insert,update,references |         |
+    | DATE2    | datetime     | NULL              | YES  |     | NULL    |                | select,insert,update,references |         |
+    +----------+--------------+-------------------+------+-----+---------+----------------+---------------------------------
+
+    9.Hibernate插入中文报错
+        Caused by: java.sql.SQLException: Incorrect string value: '\xE6\x96\xB0\xE9\x97\xBB'
+        for column 'TITLE2' at row 1
+
+        修改表的默认编码 alter table student DEFAULT CHARACTER set utf8;
+
+     10.mysql 连接url中useUnicode=true&characterEncoding=UTF-8 的作用
+     添加的作用是：指定字符的编码、解码格式。
+                  例如：mysql数据库用的是gbk编码，而项目数据库用的是utf-8编码。这时候如果添加了
+                  useUnicode=true&characterEncoding=UTF-8 ，
+                  那么作用有如下两个方面：
+     1. 存数据时：
+          数据库在存放项目数据的时候会先用UTF-8格式将数据解码成字节码，然后再将解码后的字节码重新使用GBK编
+          码存放到数据库中。
+     2.取数据时：
+          在从数据库中取数据的时候，数据库会先将数据库中的数据按GBK格式解码成字节码，然后再将解码后的字节码重
+          新按UTF-8格式编码数据，最后再将数据返回给客户端。
+    11.修改表的所有字段的编码
+    alter table `tablename` convert to character set utf8;
+    修改表的某个字段的编码
+
+    12.flush:使数据库中的记录和Session缓存中对象的状态保持一致，为了保持一致，则可能发送sql语句
+        1.在transcaction的commit方法中，先调用session的flush方法，再commit
+        2.flush可能会发送sql语句，但是不会提交事务
+        注意：
+            在没有调用commit或者显式调用session的flush方法时，也有可能调用flush方法
+            1.执行HQL或者QBC查询，会先进行flush，以得到数据表的最新数据
+            2.若记录的id是由底层数据库使用自增的方式生成的，则在调用save犯法之后，会立刻发送sql
+            语句，因为save方法之后，必须保证对象的id是存在的
+    13。refresh:强制发送select语句，以保证缓存中对象的状态和数据库一致，refresh方法要配置数据库的隔离级别为2
+      clear:执行同样的查找操作，只会发送一条select语句，因为第二次是从缓存中获取的，
+      在获取前调用session的clear方法，可以清除缓存，重新发送selec语句
