@@ -96,3 +96,72 @@ hbm2ddl.auto取值：
     13。refresh:强制发送select语句，以保证缓存中对象的状态和数据库一致，refresh方法要配置数据库的隔离级别为2
       clear:执行同样的查找操作，只会发送一条select语句，因为第二次是从缓存中获取的，
       在获取前调用session的clear方法，可以清除缓存，重新发送selec语句
+
+      14Access denied for user 'root'@'localhost' (using password:YES)解决方法
+
+      .update mysql.user set authentication_string=password('123456') where user='root' and Host = 'localhost';
+
+    15.对象的状态
+        save方法
+            使一个临时对象变为持久化状态
+            为对象分配id
+            在flush缓存时发送一条insert语句
+            在sava方法之前的id是无效的
+            持久化对象的id是不能修改的
+        persist方法和save的区别
+            如果对象已经有id，在执行persist方法时，会抛出一个异常
+
+        get和load
+        1. get方法，立即加载对象
+           load方法，若不使用该对象，则不会立即使用查询操作，而是返回一个代理对象
+        2.若数据库中没有对应的记录，且session没有被关闭，同时需要使用对象时
+            get返回null
+            load若不使用对象的任何属性，没问题，否则抛出异常
+        3.load方法可能会抛出异常LazyInitializationException,在需要初始化代理对象之前关闭了session
+
+        update方法：
+            1.若更新一个持久化对象，不需要显示的调用update方法，因为在调用commit方法的时候，会先执行session
+            的flush方法
+            2.更新一个游离对象，需要显示调用update方法，可以把一个游离对象变为持久化状态
+
+            需要注意的：
+                1.无论更新的游离对象和数据库的记录是否一致，都会发送update方法
+                如何能让update方法不在盲目的出发update语句呢？在hbm.xml的calss节点配置
+                select-before-update="true",默认是false,通常不需要设置该值，因为如果需要更新的话，会
+                多发送一条select语句
+                2.如果数据表中没有对应的记录，此时调用update方法，会抛出异常
+                3.如果update方法已经关联了一个游离对象，如果在session的缓存中已经存在相同OID的对象，则抛出异常
+                因为在session缓存中，不能有两个相同oid的对象
+
+         saveOrupdate
+            同时包含了sava和update的功能
+            判定对象为临时对象的标准
+                1.对象的OID为null
+                2.映射文件中为id属性设置了unsaved-value属性，并且java对象的OID取值与这个unsaved-value匹配
+
+           delete
+                只要OID和数据库中的记录一致，就会执行delete操作
+                若OID在数据表中没有对应的记录，则会抛出异常
+
+                delete方法处理过程
+                --计划执行一条delete语句
+                --把对象从session缓存中删除，该对象进入到删除状态
+
+                执行delete操作之后还是有id的，这时候可以在配置文件中进行配置
+                use_identifier_rollback为true,此时delete方法会把持久化对象或者游离对象OID
+                设为null,变成临时对象
+
+           evict
+                从session缓存中把指定的持久化对象删除
+
+          Hibernate与触发器协同工作，会造成两类问题
+          1.触发器使session缓存中的持久化对象与数据库中对应的数据不一致，触发器运行在数据库中，
+          ，他执行的操作对数据库时透明的
+          2.session的update方法盲目的触发触发器，无论游离对象的属性是否改变，都会执行update语句
+          ，而update语句会触发数据库中的触发器
+          解决方案
+            ---在执行完session的相关操作之后，立即调用session的flush和refresh方法，迫使session缓存
+            与数据库同步，（refresh方法重新从数据库中家在对象）
+            ---在映射文件的class元素中设置select-before-update,当session的update或者saveOrUpdate
+            方法更新一个游离对象的时候，会先执行select语句，获得当前游离对象在数据库中的最新状态，只有在不一致的情况下
+            才会调用update方法

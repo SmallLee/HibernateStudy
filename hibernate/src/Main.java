@@ -25,7 +25,6 @@ public class Main {
     private ServiceRegistry registry;
     private SessionFactory factory;
     private Transaction transaction;
-
     @Before
     public void init(){
         //创建服务注册器
@@ -39,7 +38,19 @@ public class Main {
     @Test
     public void test() {
         News news = new News("新闻", "新闻内容", new Date());
+        System.out.println(news);
+        news.setId(2200);//无效
         session.save(news);
+//        news.setId(222);抛异常
+        System.out.println(news);
+    }
+
+    @Test
+    public void testPersist() {
+        News news = new News("新闻s", "新闻内容", new Date());
+        news.setId(11);
+        session.persist(news);
+        System.out.println(news);
     }
 
     @Test
@@ -76,6 +87,13 @@ public class Main {
         System.out.println(news2);
     }
 
+    @Test
+    public void testLoad(){
+        News news = session.load(News.class, 10);
+//        System.out.println(news);
+//        session.close();
+//        System.out.println(news);
+    }
     @After
     public void destory(){
         transaction.commit();;
