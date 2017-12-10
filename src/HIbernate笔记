@@ -151,7 +151,7 @@ hbm2ddl.auto取值：
                 use_identifier_rollback为true,此时delete方法会把持久化对象或者游离对象OID
                 设为null,变成临时对象
 
-           evict
+           evict 
                 从session缓存中把指定的持久化对象删除
 
           Hibernate与触发器协同工作，会造成两类问题
