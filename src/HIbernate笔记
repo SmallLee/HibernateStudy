@@ -165,3 +165,4 @@ hbm2ddl.auto取值：
             ---在映射文件的class元素中设置select-before-update,当session的update或者saveOrUpdate
             方法更新一个游离对象的时候，会先执行select语句，获得当前游离对象在数据库中的最新状态，只有在不一致的情况下
             才会调用update方法
+   
